@@ -9,6 +9,10 @@ assignees: Ravn-dev
 
 ## Pull Requests are welcomed and appreciated. 
 
+## Contribution Workflow
+All pull requests must target the `dev` branch.
+Pull requests opened against `main` will be closed.
+
 ## Before submitting a Pull Request:
 - Match the existing code style, naming conventions, and file structure to keep the project consistent and maintainable
 - Keep changes focused on a single feature, fix, or improvement, and include a clear description of what was changed and why.

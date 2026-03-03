@@ -76,14 +76,16 @@ Tracks multiple types of player deaths:
     - Disconnect reason, pulled from TxAdmin. 
 
 ### Discord Integration
-- Ability to configure discord webhooks for Discord logging
-- Built in safeguards to prevent Discord API rate limits and errors.
+- Send server logs to Discord channels via webhooks!
+- Safely handles Discord API rate limits and errors.
+- Queue system with retries for reliable message delivery.
 
 ### NDJSON Logging
-- Ability to log to NDJSON file locally within the resource folder.
+- Logs are written locally to NDJSON files inside the ravn-logs resource folder.
+- Automatic daily log file rotation.
 - Configurable log file retention and automatic file cleanup.
-- Each log timestamped in the ISO format (UTC).
-- Intended to allow for Promtail data scraping.
+- Each log entry is timestamped in ISO 8601 format (UTC).
+- Formatted for compatibility with Promtail log ingestion.
 
 ## Known Limitations:
 
@@ -101,25 +103,27 @@ If a player holds a granade until detonation, the weapon fired log reports the w
 
 ## License
 Ravn Logs is licensed under the GNU General Public License v3 (GPLv3).  
-See the LICENSE file for details: ravn_logs/LICENSE.txt`
+See the LICENSE file for details: ravn-logs/LICENSE.txt
 
 This project is open source. If you redistribute it, you must comply with the GPLv3 license, including providing source code.
 
 # Installation Guide:
 To install and configure Ravn Logs for first time use, follow these steps:
 
-1. Click the green "Code" botton in the top right of the Github page (https://github.com/Ravn-dev/ravn-logs) for this project, then click Download ZIP. Alternatively you can clone the respoitory with the web URL (https://github.com/Ravn-dev/ravn-logs.git) directly to your FiveM server resource folder.
+1. Click the green "Code" button in the top right of the Github repository page (https://github.com/Ravn-dev/ravn-logs) for this project, then click Download ZIP. Alternatively you can clone the respoitory with the web URL (https://github.com/Ravn-dev/ravn-logs.git) directly to your FiveM server resource folder.
 
 2. Extract all files from the .ZIP to your FiveM server resource folder. If you chose to clone the respository, you can skip this step.
 
-3. Within your FiveM server resource folder, navigate to ravn_logs/config.lua. Here you will set which logs you would like to collect. NOTE: Discord Logging is enabled by default.
+3. Within your FiveM server resource folder, navigate to ravn-logs/config.lua. Here you will set which logs you would like to collect. 
+   NOTE: Discord Logging is enabled by default.
 
 4. If you wish to use the Discord logging function, you must set a Discord webhook url. (If you do not wish to use Discord logging, set all lines (73-83) under Config.DiscordLogs to false)
 
-    4a. Obtain your Discord webhook url. Here is a resource to help you create a Discord webhook url: https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks  
+    4a. Obtain your Discord webhook url. 
+    Here is a resource to help you create a Discord webhook url: https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks  
     **NOTE: NEVER SHARE YOUR DISCORD WEBHOOK URL WITH ANYONE.**
 
-    4b. Navigate to ravn_logs/server/discord.lua, then paste the Discord webhook url into lines 5 though 15. (This step is REQUIRED for Discord logging to function)
+    4b. Navigate to ravn-logs/server/discord.lua, then paste the Discord webhook url into lines 5 though 15. (This step is REQUIRED for Discord logging to function)
 
     4c. Then on line 22, replace `"SET DISCORD WEBHOOK URL HERE"` with your Discord webhook url. (This step is REQUIRED for Discord logging to function)
 	
@@ -128,13 +132,15 @@ To install and configure Ravn Logs for first time use, follow these steps:
 5. Add the `ensure ravn-logs` line in your server.cfg file.
 
 6. Start your server, if you see the following lines in the live console: 
-    `[           resources] Started resource ravn_logs`
-    `[    script:ravn_logs] [ravn-logs] Logging to logs/server-yyyymmdd.ndjson`
+
+    `[           resources] Started resource ravn-logs`
+    
+    `[    script:ravn-logs] [ravn-logs] Logging to logs/server-yyyymmdd.ndjson`
 
 You are all set.
 
 ### TIPs:
-- You can locate logs written to the NDJSON file by navigating to ravn_logs/logs
+- You can locate logs written to the NDJSON file by navigating to ravn-logs/logs
 - NDJSON file retention is by default set to 7 days in the config.lua, no need to manually delete NDJSON files.
 - A new NDJSON file is created everyday at midnight server time.
 - If you manually delete the current NDJSON file the resource is writing to, you must either, restart the resource or restart the server for a new NDJSON file to be generated.
@@ -167,4 +173,4 @@ Community contributions are encouraged and appreciated.
 The Ravn Logs project started when I encountered a problem. I wanted to use Grafana to create a dashboard displaying all of my Qbox server data. After some research I found that I could use Promtail to scrape the data, then ship the data to Grafana using Loki. There was one issue, how am I going to generate the data I want to use? Thus starting a 3 month journey of learning, building and many cups of coffee resulting in the Ravn Logs project. From the beginning I intended this resource to be open source and free to use for anyone wanting to be able to obtain insights into how their players are interacting with the GTA world. While building Ravn Logs, I kept roleplay as the focus when developing the logic for the logs so server owners and moderators can know exactly what happened and have the crucial data they need when handling incidents. 
 
 ## Changelog History:
-For a full history of changes prior to v0.9.0, see ravnlogs/changelog.md
+For a full history of changes prior to v0.9.0, see ravn-logs/changelog.md

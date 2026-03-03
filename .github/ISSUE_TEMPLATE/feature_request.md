@@ -7,17 +7,17 @@ assignees: Ravn-dev
 
 ---
 
-**If you are reporting an issue / bug, please use the bug report template** 
+# If you are reporting an issue / bug, please use the bug report template
 
-**Feature / Improvement** 
+## Feature / Improvement
 Provide a clear and concise description of the feature or improvement you would like to see. 
 
-**Use Case** 
+## Use Case
 Explain why this feature would be useful or how it would improve Ravn Logs. 
 Include specific scenarios if possible (e.g., new format for a log, or new log function). 
 
-**Screenshots or Examples** 
+## Screenshots or Examples
 Include mockups, sketches, or examples to support your suggestion.
 
-**Additional Context** 
+## Additional Context
 Add any other context, ideas, or references that might help in implementing this feature.

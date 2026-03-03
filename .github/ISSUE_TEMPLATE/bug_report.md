@@ -7,10 +7,10 @@ assignees: Ravn-dev
 
 ---
 
-**Describe the bug** 
+## Describe the bug
 Provide a clear and concise description of the bug you are reporting: 
 
-**Steps to Reproduce** 
+## Steps to Reproduce 
 List the exact steps you took to replicate the issue: 
 
 Include:
@@ -18,18 +18,18 @@ Include:
 - Debug information in the F8 or server console
 - Result observed and what result was expected.
 
-**Expected behavior** 
+## Expected behavior
 Provide a description of what you expected to happen. 
 
-**Screenshots & Videos** 
+## Screenshots & Videos
 Upload screenshots or capture the issue with Medal to better convey the problem. 
 
 NOTE: Do not post sensitive PII, Discord webhook URLs, or player identifier information. 
 
-**Technical Details** 
+## Technical Details
 FiveM Artifact Version: 
 Framework [QBX, QB, or ESX]: 
 GTA Game Build: 
 
-**Additional Context** 
+## Additional Context
 Add any other context about the problem here.

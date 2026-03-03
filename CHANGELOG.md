@@ -5,13 +5,16 @@
 ### v0.8.5
 [CHANGELOG.md]
 - Created CHANGELOG Markdown file for version history prior to v0.9.0
+
 [config.lua]
 - Cleaned up formatting and added comments for each config line
+
 [README.md]
 - Converted README from .txt to .md
 - Added documentation to README.md
 - Changed text format to be GitHub Friendly
 - Moved Change log history to CHANGELOG.md
+
 [events.lua]
 - Added WEAPON_UNARMED hash mapping for accurate unarmed death detection
 - Updated F8 console logging to enforce per-command filtering via Config.F8ConsoleLogs.commands
@@ -31,6 +34,7 @@
 ### v0.8.1
 [client.lua]
 - Fixed issue where when hit by car, then fall from building, client reports car damage data instead of fall damage data which miscategorized the log.
+
 [event.lua]
 - Added additional Hex for Grenade to weapons list. Please be the final time I have to do this.
 - Removed damage scale from explosion Discord embed, useless info.
@@ -48,6 +52,7 @@
 [events.lua]
 - Removed dead vehicle kill code block.
 - Updated Discord embed Identifier lines to return tables instead of strings.
+
 [main.lua]
 - GetSafeIdentifiers function now whitelists identifiers instead of blacklisting. 
 
@@ -58,7 +63,7 @@
 - Attempted different method (remove loop) to detect weapon fire and get weapon name, this failed due to R* engine limitations. Moved weapon name table and function lookup to be global. Both weapon fires and PVP logging now resolves weapon name.  
 
 ### v.0.7.4
-- Added ability to log F8 console custom commands to NDJSON and Discord webhooks. Is scalable to add multiple commands for logging. NOTE: cannot log "quit" or disconnect" commands :(
+- Added ability to log F8 console custom commands to NDJSON and Discord webhooks. Is scalable to add multiple commands for logging. NOTE: cannot log "quit" or disconnect" commands.
 NOTE: FiveM only allows logging of custom F8 commands registered by the resource. Built-in client commands like quit, disconnect, and other engine-level commands cannot be intercepted or logged.
 
 ### v.0.7.3

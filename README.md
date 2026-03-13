@@ -140,7 +140,7 @@ To install and configure Ravn Logs for first time use, follow these steps:
 You are all set.
 
 ### TIPs:
-- You can locate logs written to the NDJSON file by navigating to ravn-logs/logs.
+- You can locate logs written to the NDJSON file by navigating to ravn-logs/logs
 - NDJSON file retention is by default set to 7 days in the config.lua, no need to manually delete NDJSON files.
 - A new NDJSON file is created everyday at midnight server time.
 - If you manually delete the current NDJSON file the resource is writing to, you must either, restart the resource or restart the server for a new NDJSON file to be generated.

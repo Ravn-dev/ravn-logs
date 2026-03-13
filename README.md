@@ -140,7 +140,7 @@ To install and configure Ravn Logs for first time use, follow these steps:
 You are all set.
 
 ### TIPs:
-- You can locate logs written to the NDJSON file by navigating to ravn-logs/logs
+- You can locate logs written to the NDJSON file by navigating to ravn-logs/logs.
 - NDJSON file retention is by default set to 7 days in the config.lua, no need to manually delete NDJSON files.
 - A new NDJSON file is created everyday at midnight server time.
 - If you manually delete the current NDJSON file the resource is writing to, you must either, restart the resource or restart the server for a new NDJSON file to be generated.
@@ -164,14 +164,14 @@ Support is optional and greatly appreciated.
 Community contributions are welcomed and appreciated!
 
 ### Ways to Contribute:
-- Report bugs through [Issues](https://github.com/Ravn-dev/ravn-logs/issues)
-- Suggest new features or improvements in [Discussions] (https://github.com/Ravn-dev/ravn-logs/discussions/categories/ideas-feedback)
-- Submit Pull Requests for bug fixes or enhancements
+- Report bugs through [Issues](https://github.com/Ravn-dev/ravn-logs/issues).
+- Suggest new features or improvements in [Discussions](https://github.com/Ravn-dev/ravn-logs/discussions/categories/ideas-feedback).
+- Submit Pull Requests for bug fixes or enhancements.
 
 ### Before submitting a Pull Request:
-- Match the existing code style, naming conventions, and file structure to keep the project consistent and maintainable
+- Match the existing code style, naming conventions, and file structure to keep the project consistent and maintainable.
 - Keep changes focused on a single feature, fix, or improvement, and include a clear description of what was changed and why.
-- Test your changes to ensure they work as expected and do not introduce new issues
+- Test your changes to ensure they work as expected and do not introduce new issues.
 IMPORTANT: Pull Requests must be submitted to the Ravn Logs `dev` branch. Any PRs made against `main` will be closed.
 
 ## Project Inspiration

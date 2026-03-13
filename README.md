@@ -172,6 +172,7 @@ Community contributions are welcomed and appreciated!
 - Match the existing code style, naming conventions, and file structure to keep the project consistent and maintainable.
 - Keep changes focused on a single feature, fix, or improvement, and include a clear description of what was changed and why.
 - Test your changes to ensure they work as expected and do not introduce new issues.
+
 IMPORTANT: Pull Requests must be submitted to the Ravn Logs `dev` branch. Any PRs made against `main` will be closed.
 
 ## Project Inspiration

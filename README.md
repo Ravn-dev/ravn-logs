@@ -156,18 +156,23 @@ https://ko-fi.com/ravndev
 
 Support is optional and greatly appreciated.
 
+## Help & Troubleshooting
+- Ask questions or get help troubleshooting Ravn Logs in the Github repository [Discussions](https://github.com/Ravn-dev/ravn-logs/discussions/categories/q-a).
+- NOTE: Support is limited to issues directly related to Ravn Logs. Issues with third-party resources should be directed to their respective developer.
+
 ## Contributing & Feedback
-Community contributions are encouraged and appreciated.
+Community contributions are welcomed and appreciated!
 
 ### Ways to Contribute:
-- Report bugs via Issues
-- Suggest new features or improvements
-- Submit Pull Requests for fixes or enhancements
+- Report bugs through [Issues](https://github.com/Ravn-dev/ravn-logs/issues)
+- Suggest new features or improvements in [Discussions] (https://github.com/Ravn-dev/ravn-logs/discussions/categories/ideas-feedback)
+- Submit Pull Requests for bug fixes or enhancements
 
 ### Before submitting a Pull Request:
 - Match the existing code style, naming conventions, and file structure to keep the project consistent and maintainable
 - Keep changes focused on a single feature, fix, or improvement, and include a clear description of what was changed and why.
 - Test your changes to ensure they work as expected and do not introduce new issues
+IMPORTANT: Pull Requests must be submitted to the Ravn Logs `dev` branch. Any PRs made against `main` will be closed.
 
 ## Project Inspiration
 The Ravn Logs project started when I encountered a problem. I wanted to use Grafana to create a dashboard displaying all of my Qbox server data. After some research I found that I could use Promtail to scrape the data, then ship the data to Grafana using Loki. There was one issue, how am I going to generate the data I want to use? Thus starting a 3 month journey of learning, building and many cups of coffee resulting in the Ravn Logs project. From the beginning I intended this resource to be open source and free to use for anyone wanting to be able to obtain insights into how their players are interacting with the GTA world. While building Ravn Logs, I kept roleplay as the focus when developing the logic for the logs so server owners and moderators can know exactly what happened and have the crucial data they need when handling incidents. 

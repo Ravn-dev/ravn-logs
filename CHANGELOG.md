@@ -2,6 +2,15 @@
 
 ## Change Log History
 
+### v0.9.1
+[events.lua]
+- Added Do command logic
+- Added exports for Me, Scene, Ooc and Do (Intended to be used if you have other scripts that register these commands)
+
+[config.lua]
+- Added config.ChatLogs.commands.dos true/false toggle
+- Added export information as comments
+
 ### v0.8.5
 [CHANGELOG.md]
 - Created CHANGELOG Markdown file for version history prior to v0.9.0

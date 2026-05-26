@@ -9,8 +9,9 @@ https://github.com/Ravn-dev
 https://github.com/Ravn-dev/ravn-logs
 
 ## Version:
-v0.9.0
-- Initial public beta release of Ravn Logs
+v0.9.1
+- Added Do command logging
+- Added exports for Me, Scene, Ooc and Do (Intended to be used if you have other scripts that register these commands)
 
 ## Supported Frameworks:
 Ravn Logs uses FiveM Natives which should allow the resource to function on all frameworks.

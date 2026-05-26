@@ -4,7 +4,7 @@ game 'gta5'
 
 author 'RaVn'
 description 'Custom Logging Resource for QBox Servers'
-version '1.0.0'
+version '0.9.1'
 
 shared_scripts {
     'config.lua'

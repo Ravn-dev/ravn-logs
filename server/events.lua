@@ -906,6 +906,49 @@ RegisterCommand('ooc', function(source, args, raw)
     LogChatCommand(source, 'ooc', raw)
 end, false)
 
+RegisterCommand('do', function(source, args, raw)
+    if not Config.ChatLogs.enabled then return end
+    if not Config.ChatLogs.commands.dos then return end
+
+    LogChatCommand(source, 'do', raw)
+end, false)
+
+exports('MeCommand', function(source, message)
+    if not Config.ChatLogs.commands.me then return end
+    local rawFormatted = string.format("%s", message)
+    LogChatCommand(source, 'me', rawFormatted)
+    DebugPrint('[EXPORT] MeCommand:', rawFormatted)
+end)
+
+-- exports['ravn-logs']:MeCommand(source, message)
+
+exports('SceneCommand', function(source, message)
+    if not Config.ChatLogs.commands.scene then return end
+    local rawFormatted = string.format("%s", message)
+    LogChatCommand(source, 'scene', rawFormatted)
+    DebugPrint('[EXPORT] SceneCommand:', rawFormatted)
+end)
+
+-- exports['ravn-logs']:SceneCommand(source, message)
+
+exports('OocCommand', function(source, message)
+    if not Config.ChatLogs.commands.ooc then return end
+    local rawFormatted = string.format("%s", message)
+    LogChatCommand(source, 'ooc', rawFormatted)
+    DebugPrint('[EXPORT] OocCommand:', rawFormatted)
+end)
+
+-- exports['ravn-logs']:OocCommand(source, message)
+
+exports('DoCommand', function(source, message)
+    if not Config.ChatLogs.commands.dos then return end
+    local rawFormatted = string.format("%s", message)
+    LogChatCommand(source, 'do', rawFormatted)
+    DebugPrint('[EXPORT] DoCommand:', rawFormatted)
+end)
+
+-- exports['ravn-logs']:DoCommand(source, message)
+
 -- ==============================
 -- F8 Console Logging Logs
 -- ==============================

@@ -44,8 +44,17 @@ Config.ChatLogs = {
         me = true,                      -- Logs when a player sends a /me message in player chat
         scene = true,                   -- Logs when a player sends a /scene message in player chat
         ooc = true,                     -- Logs when a player sends a /ooc message in player chat
+        dos = true,                     -- Logs when a player sends a /do message in player chat
     }
 }
+
+-- If you have other scripts that register any of the above commands (me, scene, ooc, do), add the below exports into those scripts.
+    --[[
+    exports['ravn-logs']:MeCommand(source, message)
+    exports['ravn-logs']:SceneCommand(source, message)
+    exports['ravn-logs']:OocCommand(source, message)
+    exports['ravn-logs']:DoCommand(source, message)
+    --]]
 
 -- ==============================
 -- F8 Command Logs

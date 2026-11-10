@@ -9,6 +9,13 @@ local function baseLog(type, data)
     }
 end
 
+local deathEvents, weaponFireTimes, f8Times = {}, {}, {}
+AddEventHandler('playerDropped', function()
+    deathEvents[source] = nil
+    weaponFireTimes[source] = nil
+    f8Times[source] = nil
+end)
+
 -- =================
 -- Global Functions
 -- =================
@@ -228,11 +235,39 @@ end)
 
 RegisterNetEvent('ravn_logs:playerDied', function(damageData)
     local src = source
-    local now = os.time() * 1000 -- server timestamp in ms
+    if type(damageData) ~= 'table' or type(damageData.sourceType) ~= 'string' then return end
+    local allowedSources = {
+        player = true, player_vehicle = true, npc = true, npc_vehicle = true,
+        vehicle = true, vehicle_no_driver = true, environment = true,
+        self_inflicted = true, self_inflicted_vehicle = true
+    }
+    if not allowedSources[damageData.sourceType] then return end
+    local nowTimer = GetGameTimer()
+    if deathEvents[src] and nowTimer >= deathEvents[src] and nowTimer - deathEvents[src] < 500 then return end
+    deathEvents[src] = nowTimer
 
-    if damageData then
-        damageData.timestamp = now -- assign timestamp on server
+    damageData = {
+        sourceType = damageData.sourceType,
+        attackerId = tonumber(damageData.attackerId),
+        vehicleModel = tonumber(damageData.vehicleModel),
+        vehicleName = type(damageData.vehicleName) == 'string' and damageData.vehicleName:sub(1, 64) or 'Unknown',
+        weaponHash = tonumber(damageData.weaponHash)
+    }
+    if damageData.attackerId and (damageData.attackerId < 1 or damageData.attackerId % 1 ~= 0 or not GetPlayerName(damageData.attackerId)) then
+        damageData.attackerId = nil
     end
+    if damageData.sourceType == 'player' and (not damageData.attackerId or damageData.attackerId == src) then return end
+    if damageData.sourceType == 'player_vehicle' and not damageData.attackerId then
+        damageData.sourceType = 'vehicle_no_driver'
+    end
+    if damageData.sourceType == 'player_vehicle' and damageData.attackerId == src then return end
+    if damageData.sourceType == 'self_inflicted' or damageData.sourceType == 'self_inflicted_vehicle' then
+        damageData.attackerId = src
+    end
+    if damageData.weaponHash and (damageData.weaponHash % 1 ~= 0 or math.abs(damageData.weaponHash) > 2147483648) then damageData.weaponHash = nil end
+    if damageData.vehicleModel and (damageData.vehicleModel % 1 ~= 0 or math.abs(damageData.vehicleModel) > 4294967295) then damageData.vehicleModel = nil end
+    local now = os.time() * 1000 -- server timestamp in ms
+    damageData.timestamp = now -- assign timestamp on server
 
     -- Debug
     if Config.Debug then
@@ -244,9 +279,8 @@ RegisterNetEvent('ravn_logs:playerDied', function(damageData)
     -------------------------------------------------
     -- VEHICLE KILL
     -------------------------------------------------
-    if damageData.sourceType 
-    and (damageData.sourceType == "vehicle" 
-    or damageData.sourceType == "npc_vehicle") 
+    if damageData.sourceType == "vehicle"
+    or damageData.sourceType == "npc_vehicle"
     or damageData.sourceType == "player_vehicle" then
 
         return HandleVehicleKill(src, damageData)
@@ -659,6 +693,14 @@ RegisterNetEvent('ravn-logs:weaponFired', function(weaponHash, x, y, z)
     if not Config.LogWeaponFires then return end
 
     local src = source
+    weaponHash, x, y, z = tonumber(weaponHash), tonumber(x), tonumber(y), tonumber(z)
+    if not weaponHash or weaponHash % 1 ~= 0 or math.abs(weaponHash) > 2147483648 then return end
+    if not x or not y or not z or x ~= x or y ~= y or z ~= z
+        or math.abs(x) > 20000 or math.abs(y) > 20000 or math.abs(z) > 20000 then return end
+    local now = GetGameTimer()
+    local cooldown = math.max(100, tonumber(Config.WeaponFireCooldownMs) or 200)
+    if weaponFireTimes[src] and now >= weaponFireTimes[src] and now - weaponFireTimes[src] < cooldown then return end
+    weaponFireTimes[src] = now
     local playerName = GetPlayerName(src)
     local playerIdentifiers = GetSafeIdentifiers(src)
     -- Convert hash to human-readable name
@@ -954,20 +996,16 @@ end)
 -- ==============================
 RegisterNetEvent("ravn_logs:f8Command", function(cmd)
     if not Config.F8ConsoleLogs or not Config.F8ConsoleLogs.enabled then return end
+    if type(cmd) ~= 'string' or #cmd > 64 or not cmd:match('^[%w_%-]+$') then return end
 
     -- Normalize command name (Allows for F8 console entries to match config key if entered in upper or lowercase)
     cmd = string.lower(cmd)
-
-    if Config.F8ConsoleLogs.commands then
-        local allowed = Config.F8ConsoleLogs.commands[cmd]
-
-        -- If config f8 commands set to false OR not defined, don't log
-        if allowed ~= true then
-            return
-        end
-    end
+    if type(Config.F8ConsoleLogs.commands) ~= 'table' or Config.F8ConsoleLogs.commands[cmd] ~= true then return end
 
     local src = source
+    local now = GetGameTimer()
+    if f8Times[src] and now >= f8Times[src] and now - f8Times[src] < 1000 then return end
+    f8Times[src] = now
     local playerName = GetPlayerName(src)
     local playerIdentifiers = GetSafeIdentifiers(src)
 

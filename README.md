@@ -9,9 +9,15 @@ https://github.com/Ravn-dev
 https://github.com/Ravn-dev/ravn-logs
 
 ## Version:
-v0.9.1
-- Added Do command logging
-- Added exports for Me, Scene, Ooc and Do (Intended to be used if you have other scripts that register these commands)
+v1.0.0
+- Added independent NDJSON, Discord, and optional MySQL/MariaDB logging sinks.
+- Improved NDJSON write performance with append-based logging and removed shell-based retention cleanup.
+- Added a read-only Svelte in game log viewer with paginated database search and filters.
+- Added configurable ACE and Discord role access checks for the viewer.
+- Added a validated server side SubmitLog export for custom events.
+- Hardened death, weapon fire, F8, and viewer event handling with input validation and rate limits.
+- Corrected Discord rate limit retry timing and stopped exposing webhook URLs in logs.
+- Fixed the death respawn latch’s undefined variable reference while retaining its health-based reset behavior.
 
 ## Supported Frameworks:
 Ravn Logs uses FiveM Natives which should allow the resource to function on all frameworks.
@@ -76,17 +82,38 @@ Tracks multiple types of player deaths:
     - Server ID and identifiers
     - Disconnect reason, pulled from TxAdmin. 
 
-### Discord Integration
-- Send server logs to Discord channels via webhooks!
-- Safely handles Discord API rate limits and errors.
-- Queue system with retries for reliable message delivery.
+### Database Support and In-Game Log Viewer
+- Optional: MySQL/MariaDB storage is supported through oxmysql. Start oxmysql before ravn-logs and enable database storage in `Config.Sinks`.
+- The read-only viewer opens with `/ravnlogs`. It searches logs stored in the database; it does not search NDJSON files or Discord messages. Search by event type, player, time range, or text. Results are paginated.
+- The viewer is available only when database storage is enabled and oxmysql is running.
+- Set `Config.LogViewer.accessMode` to `ace`, `discord`, `either`, or `both`:
+  - `ace`: requires the ACE permission configured in `Config.LogViewer.acePermission`.
+  - `discord`: requires the configured Discord guild role.
+  - `either`: grants access if the player passes either check.
+  - `both`: requires the player to pass both checks.
+- Example ACE grant: `add_ace group.admin ravnlogs.view allow`
+- For Discord role checks, configure the guild and role IDs in `Config.LogViewer` and add the bot token as a server-only convar:
+  `set ravn_logs_discord_bot_token "YOUR_BOT_TOKEN"`
+  Do not use `setr`, which replicates the convar to clients. The bot must be a member of the configured guild. Missing credentials or a failed Discord check denies access.
+- Discord webhook logging is separate from the bot-based role check.
+
+### Discord Logging
+- Send configured server logs to Discord channels using webhooks.
+- Handles Discord rate limits and retries queued messages after temporary failures.
+- Configure webhook URLs in `server/discord.lua`.
 
 ### NDJSON Logging
-- Logs are written locally to NDJSON files inside the ravn-logs resource folder.
-- Automatic daily log file rotation.
-- Configurable log file retention and automatic file cleanup.
-- Each log entry is timestamped in ISO 8601 format (UTC).
-- Formatted for compatibility with Promtail log ingestion.
+- Writes logs to NDJSON files inside the ravn-logs resource using append-based writes.
+- Rotates files daily and removes old files according to `Config.LogRetentionDays`.
+- Timestamps use ISO 8601 in UTC.
+- Output is formatted for Promtail log ingestion.
+
+### Integration with Other Resources
+
+Other server resources can submit structured log entries with the `SubmitLog` export:
+
+```lua
+exports['ravn-logs']:SubmitLog('custom_event', { key = 'value' })
 
 ## Known Limitations:
 
@@ -115,10 +142,9 @@ To install and configure Ravn Logs for first time use, follow these steps:
 
 2. Extract all files from the .ZIP to your FiveM server resource folder. If you chose to clone the respository, you can skip this step.
 
-3. Within your FiveM server resource folder, navigate to ravn-logs/config.lua. Here you will set which logs you would like to collect. 
-   NOTE: Discord Logging is enabled by default.
+3. Edit `ravn-logs/config.lua` to choose which log types and output sinks to enable. NDJSON and Discord are enabled by default; database storage is disabled by default.
 
-4. If you wish to use the Discord logging function, you must set a Discord webhook url. (If you do not wish to use Discord logging, set all lines (73-83) under Config.DiscordLogs to false)
+4. To send logs to Discord, replace the placeholder URLs in the `DISCORD_WEBHOOKS` table in `ravn-logs/server/discord.lua`. Configure each log type with the webhook you want it to use. To disable Discord delivery entirely, set `Config.Sinks.discord = false`.
 
     4a. Obtain your Discord webhook url. 
     Here is a resource to help you create a Discord webhook url: https://support.discord.com/hc/en-us/articles/228383668-Intro-to-Webhooks  
@@ -130,13 +156,23 @@ To install and configure Ravn Logs for first time use, follow these steps:
 	
     4d. Save the discord.lua file after you have made the changes from steps 4b and 4c.
 
-5. Add the `ensure ravn-logs` line in your server.cfg file.
+5. To enable database logging and the in game viewer: [Required for ingame log viewer to work]
+   5a. Install and start oxmysql before ravn-logs.
+   5b. Set `Config.Sinks.database = true` in `config.lua`.
+   5c. Configure `Config.LogViewer`. The viewer opens with `/ravnlogs`.
+   5d. For ACE access, grant the configured permission, for example: `add_ace group.admin ravnlogs.view allow`.
+   5e. For Discord role access, configure the guild and role IDs and set the bot token as a server-only convar, for example: `set ravn_logs_discord_bot_token "YOUR_BOT_TOKEN"`. Do not use `setr`.
 
-6. Start your server, if you see the following lines in the live console: 
+    Note: If you change the in game menu’s files in web/src, rebuild the menu before starting the server. Open a terminal in the ravn-logs folder and run:
+    `pnpm install`
+    `pnpm build`
 
-    `[           resources] Started resource ravn-logs`
-    
-    `[    script:ravn-logs] [ravn-logs] Logging to logs/server-yyyymmdd.ndjson`
+6. Add the `ensure ravn-logs` line in your server.cfg file. If a database is configured, make sure `ensure oxmysql` appears before `ensure ravn-logs`.
+
+6. Start your server, With NDJSON enabled, if you see the following lines in the live console: 
+
+    `       [resources] Started resource ravn-logs` 
+    `[script:ravn-logs] [ravn-logs] Logging to logs/server-yyyymmdd.ndjson`
 
 You are all set.
 

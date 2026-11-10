@@ -3,6 +3,19 @@
 
 Config = {}
 
+-- Independent output sinks. Database history requires oxmysql.
+Config.Sinks = { ndjson = true, discord = true, database = false }
+Config.Database = { table = 'ravn_logs', pageSize = 25, maxPageSize = 50 }
+Config.LogViewer = {
+    enabled = true,
+    command = 'ravnlogs',
+    acePermission = 'ravnlogs.view',
+    accessMode = 'either', -- ace, discord, either, both
+    discordGuildId = '',
+    discordRoleId = '',
+    discordBotTokenConvar = 'ravn_logs_discord_bot_token'
+}
+
 -- ==============================
 -- Debugging
 -- ==============================

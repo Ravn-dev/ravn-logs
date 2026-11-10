@@ -32,9 +32,9 @@ local isProcessing = false
 -- Log To Discord
 -- ==================================
 function LogToDiscord(logType, username, message)
+    if not Config.Sinks.discord then return end
     local webhook = DISCORD_WEBHOOKS[logType]
-    if not webhook then
-        print("Unknown log type for Discord: " .. tostring(logType))
+    if type(webhook) ~= 'string' or not webhook:match('^https://discord%.com/api/webhooks/') then
         return
     end
 
@@ -78,7 +78,7 @@ local function retryQueueItem(item, delay)
     item.retries = (item.retries or 0) + 1
 
     if item.retries > MAX_DISCORD_RETRIES then
-        print("Dropping Discord log after max retries:", item.webhook)
+        print("Dropping Discord log after max retries")
         return -- drop the item
     end
 
@@ -134,9 +134,9 @@ function processDiscordQueue()
             local retryAfter = 5000 -- default 5 seconds (ms)
 
             if text then
-                local data = json.decode(text)
-                if data and data.retry_after then
-                    retryAfter = tonumber(data.retry_after) or 5000
+                local ok, data = pcall(json.decode, text)
+                if ok and type(data) == 'table' and data.retry_after then
+                    retryAfter = (tonumber(data.retry_after) or 5) * 1000
                 end
             end
 
@@ -147,7 +147,7 @@ function processDiscordQueue()
                 global = getHeader(headers, "x-ratelimit-global") ~= nil
             }
 
-            print("Discord 429 hit for webhook. Retrying in " .. retryAfter .. " ms for webhook " .. webhook)
+            print("Discord 429 hit. Retrying in " .. retryAfter .. " ms")
 
             retryQueueItem(item, retryAfter)
 
@@ -155,7 +155,7 @@ function processDiscordQueue()
         end
 
         if err ~= 200 and err ~= 204 and err ~= 429 then
-            print("Discord network error " .. tostring(err) .. ". Retrying in 5s for webhook " .. webhook)
+            print("Discord network error " .. tostring(err) .. ". Retrying in 5s")
             retryQueueItem(item, 5000)
             return
         end
@@ -179,7 +179,7 @@ function processDiscordQueue()
             }
 
             -- Debug
-            DebugPrint("[server/discord.lua]  Webhook rate limits:", webhook, remaining, resetAfter, global)
+            DebugPrint("[server/discord.lua] Webhook rate limits:", remaining, resetAfter, global)
         end
 
         -- ============================
@@ -192,11 +192,11 @@ function processDiscordQueue()
             if rl.global then
                 local reset = rl.resetAfter or 5
                 nextDelay = reset * 1000
-                print("Global rate limit active. Waiting " .. nextDelay .. "ms for webhook " .. webhook)
+                print("Global rate limit active. Waiting " .. nextDelay .. "ms")
             elseif rl.remaining and rl.remaining <= 0 then
                 local reset = rl.resetAfter or 5
                 nextDelay = reset * 1000
-                print("Webhook bucket exhausted. Waiting " .. nextDelay .. "ms for webhook " .. webhook)
+                print("Webhook bucket exhausted. Waiting " .. nextDelay .. "ms")
             else
                 nextDelay = 250 -- small spacing to avoid burst spam
             end

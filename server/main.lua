@@ -1,136 +1,83 @@
--- Ravn Logs (C) 2026 Ravn (Ravn-Dev)
--- Licensed under GNU GPLv3 (see LICENSE file)
-
+-- Ravn Logs (C) 2026 Ravn (Ravn-Dev), GPLv3
 local RESOURCE = GetCurrentResourceName()
 
--- Debug Helper
 function DebugPrint(...)
-    if Config.Debug then
-        print('^5[ravn-logs DEBUG]^7', ...)
-    end
+    if Config.Debug then print('^5[ravn-logs DEBUG]^7', ...) end
 end
 
--- Dictates to create one NDJSON file per calendar day
-local function getLogFile()
-    return string.format('logs/server-%s.ndjson', os.date('%Y%m%d'))
-end
-
-local LOG_FILE = getLogFile()
-
--- Ensure daily log file exists
-CreateThread(function()
-    -- Ensure directory exists by writing an empty file if needed
-    if not LoadResourceFile(RESOURCE, LOG_FILE) then
-        SaveResourceFile(RESOURCE, LOG_FILE, '', -1)
-    end
-
-    print(('^2[ravn-logs]^7 Logging to %s'):format(LOG_FILE))
-end)
-
--- ==============================
--- Identifier Privacy Filter
--- ==============================
 function GetSafeIdentifiers(src)
     local safe = {}
-
     for _, identifier in ipairs(GetPlayerIdentifiers(src)) do
-        if identifier:find("^discord:") then
-            local discordId = identifier:match("discord:(%d+)")
-            if discordId then
-                table.insert(safe, "discord: <@" .. discordId .. ">")
-            end
-        
-        elseif identifier:find("^license:")
-        or identifier:find("^license2:")
-        or identifier:find("^steam:")
-        or identifier:find("^fivem:") then
-            table.insert(safe, identifier)
+        if identifier:match('^discord:%d+$') then
+            safe[#safe + 1] = 'discord: <@' .. identifier:sub(9) .. '>'
+        elseif identifier:match('^license:') or identifier:match('^license2:')
+            or identifier:match('^steam:') or identifier:match('^fivem:') then
+            safe[#safe + 1] = identifier
         end
     end
-
     return safe
 end
 
--- ==============================
--- Human-readable ISO timestamp
--- ==============================
-local function toISO(timestamp)
-    local t = os.date('!*t', timestamp) -- Set to UTC
-            --os.date('*t', timestamp): This returns a table representing your Server's Local Time.
-            --os.date('!*t', timestamp): This returns a table representing UTC (Greenwich Mean Time).
-    return string.format('%04d-%02d-%02dT%02d:%02d:%02dZ',
-        t.year, t.month, t.day,
-        t.hour, t.min, t.sec
-    )
+local function logFile()
+    return ('logs/server-%s.ndjson'):format(os.date('%Y%m%d'))
 end
 
--- ==============================
--- WriteLog Function
--- ==============================
----@param entry table
+local function toISO(timestamp)
+    return os.date('!%Y-%m-%dT%H:%M:%SZ', timestamp)
+end
+
 function WriteLog(entry)
-    -- Attach Promtail / Loki labels safely (shallow copy)
-    entry.labels = entry.labels or {}
-    for k, v in pairs(Config.LokiLabels) do
-        entry.labels[k] = v
+    if type(entry) ~= 'table' or type(entry.type) ~= 'string' or #entry.type > 64 or type(entry.data) ~= 'table' then return false end
+    local labels = {}
+    for key, value in pairs(Config.LokiLabels or {}) do labels[key] = value end
+    for key, value in pairs(type(entry.labels) == 'table' and entry.labels or {}) do
+        if type(key) == 'string' and type(value) == 'string' then labels[key] = value end
     end
 
-    -- Ensure timestamp is set
-    local ts = entry.timestamp or os.time()
+    local timestamp = tonumber(entry.timestamp) or os.time()
+    if timestamp > 100000000000 then timestamp = math.floor(timestamp / 1000) end
+    if timestamp ~= timestamp or timestamp < 0 or timestamp > 253402300799 then timestamp = os.time() end
+    local ordered = { timestamp = timestamp, type = entry.type, labels = labels, data = entry.data, iso = toISO(timestamp) }
+    local ok, raw = pcall(json.encode, ordered)
+    if not ok or not raw or #raw > 65536 then return false end
 
-    -- Ensure timestamp is first
-    local orderedEntry = {
-        timestamp = ts,
-        type = entry.type,
-        labels = entry.labels,
-        data = entry.data,
-        iso = toISO(ts)
-    }
-
-    -- Check for daily rotation
-    local currentFile = getLogFile()
-    if currentFile ~= LOG_FILE then
-        LOG_FILE = currentFile
-        SaveResourceFile(RESOURCE, LOG_FILE, '', -1)
-        DebugPrint('Rotated log file to', LOG_FILE)
+    if Config.Sinks.ndjson then
+        local file = io.open(GetResourcePath(RESOURCE) .. '/' .. logFile(), 'a')
+        if not file then
+            print('^1[ravn-logs]^7 Could not append NDJSON log')
+        else
+            local ok, result = pcall(function() return file:write(raw, '\n') end)
+            file:close()
+            if not ok or not result then print('^1[ravn-logs]^7 NDJSON write failed') end
+        end
     end
-    -- Append entry as NDJSON
-    local raw = LoadResourceFile(RESOURCE, LOG_FILE) or ''
-    SaveResourceFile(RESOURCE, LOG_FILE, raw .. json.encode(orderedEntry) .. '\n', -1)
+    if Config.Sinks.database and StoreDatabaseLog then StoreDatabaseLog(ordered, raw) end
+    return true
 end
 
 exports('WriteLog', WriteLog)
 
--- ==============================
--- Log Retention Cleanup
--- ==============================
+-- Server-side integration API: exports['ravn-logs']:SubmitLog('event_name', { ... })
+exports('SubmitLog', function(eventType, data)
+    if type(eventType) ~= 'string' or #eventType > 64 or not eventType:match('^[%w_%-]+$') or type(data) ~= 'table' then return false end
+    return WriteLog({ type = eventType, data = data })
+end)
 
 CreateThread(function()
-    Wait(5000) -- wait for server startup
-
-    local resource = GetCurrentResourceName()
-    local handle = io.popen('dir "' .. GetResourcePath(resource) .. '/logs" /b')
-    if not handle then return end
-
-    local now = os.time()
-
-    for file in handle:lines() do
-        local date = file:match('server%-(%d%d%d%d%d%d%d%d)%.ndjson')
-        if date then
-            local year = tonumber(date:sub(1,4))
-            local month = tonumber(date:sub(5,6))
-            local day = tonumber(date:sub(7,8))
-
-            local fileTime = os.time({ year = year, month = month, day = day })
-            local ageDays = os.difftime(now, fileTime) / 86400
-
-            if ageDays > Config.LogRetentionDays then
-                os.remove(GetResourcePath(resource) .. '/logs/' .. file)
-                print(('^3[ravn-logs]^7 Deleted old log: %s'):format(file))
-                DebugPrint('Deleted old log file:', file)
-            end
-        end
+    Wait(5000)
+    if Config.Sinks.ndjson then
+        local file = io.open(GetResourcePath(RESOURCE) .. '/' .. logFile(), 'a')
+        if file then file:close() end
+        print(('^2[ravn-logs]^7 Logging to %s'):format(logFile()))
     end
 
-    handle:close()
+    -- File names are date-derived, so cleanup needs no shell command or directory traversal.
+    if not Config.Sinks.ndjson then return end
+    local keep = math.max(0, math.floor(tonumber(Config.LogRetentionDays) or 7))
+    local today = os.time({ year = tonumber(os.date('%Y')), month = tonumber(os.date('%m')), day = tonumber(os.date('%d')), hour = 12 })
+    for age = keep + 1, keep + 3660 do
+        local date = os.date('%Y%m%d', today - age * 86400)
+        local path = GetResourcePath(RESOURCE) .. '/logs/server-' .. date .. '.ndjson'
+        if os.remove(path) then DebugPrint('Deleted old log file:', date) end
+    end
 end)

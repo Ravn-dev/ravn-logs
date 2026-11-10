@@ -266,7 +266,7 @@ CreateThread(function()
         end
 
         -- Reset only after full respawn (health restored)
-        if hasSentDeath and not dead then
+        if hasSentDeath then
             local health = GetEntityHealth(ped)
             local maxHealth = GetEntityMaxHealth(ped)
 

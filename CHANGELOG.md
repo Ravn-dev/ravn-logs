@@ -2,6 +2,14 @@
 
 ## Change Log History
 
+### v1.0.0
+- Added independent NDJSON, Discord, and optional oxmysql database sinks.
+- Replaced full-file NDJSON rewrites with append writes and removed shell-based retention enumeration.
+- Added paginated database search through a read-only Svelte NUI with ACE and Discord-role access modes.
+- Added a bounded server-side `SubmitLog` export and validation/rate limits for client death, weapon-fire, and F8 events.
+- Fixed the death respawn latch's undefined `dead` reference and retained its full-health reset behavior.
+- Corrected Discord `retry_after` seconds-to-milliseconds handling and stopped logging webhook URLs.
+
 ### v0.9.1
 [events.lua]
 - Added Do command logic
